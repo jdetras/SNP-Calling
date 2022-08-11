@@ -61,6 +61,7 @@ process sort_sam {
 
 process fix_mate {
     tag "$bam.simpleName"
+    publishDir params.results 
     
     input:
       path bam
@@ -71,5 +72,21 @@ process fix_mate {
     script:
     """
     picard FixMateInformation -I ${bam} -O ${bam.simpleName}.fixmate.bam --VALIDATION_STRINGENCY LENIENT --CREATE_INDEX TRUE
+    """
+}
+
+process mark_duplicates {
+    tag "$bam.simpleName"
+    publishDir params.results 
+
+    input: 
+      path bam
+
+    output:
+      path "${bam.simpleName}.markdup.bam"
+
+    script:
+    """
+    picard MarkDuplicates -I ${bam} -O ${bam.simpleName}.markdup.bam --METRICS_FILE ${bam.simpleName}.metrics --VALIDATION_STRINGENCY LENIENT --CREATE_INDEX TRUE
     """
 }
