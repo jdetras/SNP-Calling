@@ -39,7 +39,12 @@ process alignment {
 
     script:
     """
-    bwa mem -M ${genome} ${reads[0]} ${reads[1]} > ${sampleName}.sam
+    bwa mem \
+      -M \
+      ${genome} \
+      ${reads[0]} \
+      ${reads[1]} \
+      > ${sampleName}.sam
     """
 }
 
@@ -55,7 +60,12 @@ process sort_sam {
 
     script:
     """
-    picard SortSam -I ${sam} -O ${sam.baseName}.sorted.bam -SO coordinate --VALIDATION_STRINGENCY LENIENT --CREATE_INDEX TRUE
+    picard SortSam \
+      -I ${sam} \
+      -O ${sam.baseName}.sorted.bam \
+      -SO coordinate \
+      --VALIDATION_STRINGENCY LENIENT \
+      --CREATE_INDEX TRUE
     """
 }
 
@@ -71,7 +81,11 @@ process fix_mate {
 
     script:
     """
-    picard FixMateInformation -I ${bam} -O ${bam.simpleName}.fixmate.bam --VALIDATION_STRINGENCY LENIENT --CREATE_INDEX TRUE
+    picard FixMateInformation \
+      -I ${bam} \
+      -O ${bam.simpleName}.fixmate.bam \
+      --VALIDATION_STRINGENCY LENIENT \
+      --CREATE_INDEX TRUE
     """
 }
 
@@ -87,6 +101,37 @@ process mark_duplicates {
 
     script:
     """
-    picard MarkDuplicates -I ${bam} -O ${bam.simpleName}.markdup.bam --METRICS_FILE ${bam.simpleName}.metrics --VALIDATION_STRINGENCY LENIENT --CREATE_INDEX TRUE
+    picard MarkDuplicates \
+       -I ${bam} \
+       -O ${bam.simpleName}.markdup.bam \
+       --METRICS_FILE ${bam.simpleName}.metrics \
+       --VALIDATION_STRINGENCY LENIENT \
+       --CREATE_INDEX TRUE
+    """
+}
+
+process add_read_groups {
+    tag "$bam.simpleName"
+    publishDir params.results
+
+    input:
+      path bam
+
+    output:
+      path "${bam.simpleName}.rg.bam"
+
+    script:
+    """
+    picard AddOrReplaceReadGroups \
+      -I ${bam} \
+      -O ${bam.simpleName}.rg.bam \
+      -ID ${bam.simpleName} \
+      -PL Illumina \
+      -SM rice \
+      -LB 3k \
+      -CN BGI \
+      -PU gsl \
+      --VALIDATION_STRINGENCY LENIENT \
+      --CREATE_INDEX TRUE
     """
 }

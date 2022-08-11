@@ -41,7 +41,7 @@ include {
 	sort_sam;
 	fix_mate;
 	mark_duplicates;
-//	add_read_groups;
+	add_read_groups;
 //	merge_bam;
 //	haplotype_caller;
 } from './modules.nf'
@@ -51,9 +51,6 @@ include {
  */
 workflow{
 	reads_ch = Channel.fromFilePairs(params.reads)
-//        Channel
-//         .fromFilePairs(params.reads)
-//          .view()
 
 //	prepare_reference(params.genome)
         alignment(
@@ -64,12 +61,10 @@ workflow{
 		genome_bwt, 
 		genome_pac, 
 		genome_sa )
-	sort_sam(
-		alignment.out )
-	fix_mate(
-		sort_sam.out )
+	sort_sam(alignment.out )
+	fix_mate(sort_sam.out )
 	mark_duplicates(fix_mate.out)
-//	add_read_groups
+	add_read_groups(mark_duplicates.out)
 //	merge_bam
 //	haplotype_caller
 }
