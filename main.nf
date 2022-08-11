@@ -40,7 +40,7 @@ include {
 	alignment;
 	sort_sam;
 	fix_mate;
-//	mark_duplicates;
+	mark_duplicates;
 //	add_read_groups;
 //	merge_bam;
 //	haplotype_caller;
@@ -68,7 +68,7 @@ workflow{
 		alignment.out )
 	fix_mate(
 		sort_sam.out )
-//	mark_duplicates
+	mark_duplicates(fix_mate.out)
 //	add_read_groups
 //	merge_bam
 //	haplotype_caller
