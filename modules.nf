@@ -38,7 +38,7 @@ process alignment {
 
     script:
     """
-    bwa mem -M ${genome} ${reads[0]} ${reads[1]} > ${sampleName}.sam
+    bwa mem -M ${genome} $reads > ${sampleName}.sam
     """
 }
 
