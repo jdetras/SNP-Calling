@@ -13,9 +13,9 @@ nextflow.enable.dsl = 2
  */
 params.genome = "$baseDir/data/reference/Chr7.fasta"
 params.reference = "$baseDir/data/reference"
-params.reads = "$baseDir/data/reads/*-?_{1,2}.fq.gz"
+params.reads = "$baseDir/data/reads/palay/*-?_{1,2}.fq.gz"
 params.data = "$baseDir/data"
-params.results = "$baseDir/data/results"
+params.output = "$baseDir/data/output"
 
 genome_fai = file(params.genome + ".fai")
 genome_bwt = file(params.genome + ".bwt")
@@ -29,7 +29,7 @@ SNP CALLING
 ===========
 genome : $params.genome
 reads  : $params.reads
-results: $params.results
+output : $params.output
 """
 
 /*
@@ -51,7 +51,7 @@ include {
  */
 workflow{
 	reads_ch = Channel.fromFilePairs(params.reads)
-
+	bams = Channel.fromPath("$params.output/*.rg.bam")
 //	prepare_reference(params.genome)
         alignment(
 		params.genome,
@@ -65,6 +65,6 @@ workflow{
 	fix_mate(sort_sam.out )
 	mark_duplicates(fix_mate.out)
 	add_read_groups(mark_duplicates.out)
-//	merge_bam
+//	merge_bam(bams)
 //	haplotype_caller
 }

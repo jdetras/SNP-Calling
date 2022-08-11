@@ -14,7 +14,6 @@ process prepare_reference {
         path("${genome}.pac"), \
         path("${genome}.sa")
 
-
     script:
     """
     samtools faidx $genome
@@ -23,7 +22,7 @@ process prepare_reference {
 }
 
 process alignment {
-    publishDir params.results
+    publishDir params.output
 
     input:
       path genome
@@ -39,18 +38,15 @@ process alignment {
 
     script:
     """
-    bwa mem \
-      -M \
-      ${genome} \
-      ${reads[0]} \
-      ${reads[1]} \
-      > ${sampleName}.sam
+    bwa mem -M ${genome} \
+      ${reads[0]} ${reads[1]} > \
+      ${sampleName}.sam
     """
 }
 
 process sort_sam {
     tag "$sam.baseName"
-    publishDir params.results 
+    publishDir params.output 
 
     input:
       path sam
@@ -71,7 +67,7 @@ process sort_sam {
 
 process fix_mate {
     tag "$bam.simpleName"
-    publishDir params.results 
+    publishDir params.output 
     
     input:
       path bam
@@ -91,7 +87,7 @@ process fix_mate {
 
 process mark_duplicates {
     tag "$bam.simpleName"
-    publishDir params.results 
+    publishDir params.output 
 
     input: 
       path bam
@@ -112,7 +108,7 @@ process mark_duplicates {
 
 process add_read_groups {
     tag "$bam.simpleName"
-    publishDir params.results
+    publishDir params.output
 
     input:
       path bam
@@ -135,3 +131,19 @@ process add_read_groups {
       --CREATE_INDEX TRUE
     """
 }
+
+//process merge_bam {
+//    tag "$bam.simpleName"
+//    publishDir params.output
+//    
+//    input:
+//      path '*.rg.bam' from bams
+//
+//    output:
+//      path "${bam}.merged.bam"
+//
+//    script:
+//    """
+//    "echo *.rg.bam"
+//   """
+//}
