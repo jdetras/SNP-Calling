@@ -2,20 +2,25 @@ process alignment {
     publishDir params.output
 
     input:
-      path genome
-      tuple val(sampleName), file(reads)
-      path genome_amb
-      path genome_ann
-      path genome_bwt
-      path genome_pac
-      path genome_sa
+        path genome
+        tuple val(sampleName), file(reads)
+        path genome_amb
+        path genome_ann
+        path genome_bwt
+        path genome_pac
+        path genome_sa
 
     output:
-      file "${sampleName}.sam"
+        file "${sampleName}.sam"
 
     script:
     """
-    bwa mem -M ${genome} ${reads[0]} ${reads[1]} > ${sampleName}.sam
+    bwa mem \
+        -M \
+        ${genome} \
+        ${reads[0]} \
+        ${reads[1]} \
+        > ${sampleName}.sam
     """
 }
 
@@ -24,19 +29,19 @@ process sort_sam {
     publishDir params.output 
 
     input:
-      path sam
+        path sam
 
     output:
-      path "${sam.baseName}.sorted.bam"
+        path "${sam.baseName}.sorted.bam"
 
     script:
     """
     picard SortSam \
-      -I ${sam} \
-      -O ${sam.baseName}.sorted.bam \
-      -SO coordinate \
-      --VALIDATION_STRINGENCY LENIENT \
-      --CREATE_INDEX TRUE
+        -I ${sam} \
+        -O ${sam.baseName}.sorted.bam \
+        -SO coordinate \
+        --VALIDATION_STRINGENCY LENIENT \
+        --CREATE_INDEX TRUE
     """
 }
 
@@ -45,18 +50,18 @@ process fix_mate {
     publishDir params.output 
     
     input:
-      path bam
+        path bam
 
     output:
-      path "${bam.simpleName}.fixmate.bam"
+        path "${bam.simpleName}.fixmate.bam"
 
     script:
     """
     picard FixMateInformation \
-      -I ${bam} \
-      -O ${bam.simpleName}.fixmate.bam \
-      --VALIDATION_STRINGENCY LENIENT \
-      --CREATE_INDEX TRUE
+        -I ${bam} \
+        -O ${bam.simpleName}.fixmate.bam \
+        --VALIDATION_STRINGENCY LENIENT \
+        --CREATE_INDEX TRUE
     """
 }
 
@@ -65,19 +70,19 @@ process mark_duplicates {
     publishDir params.output 
 
     input: 
-      path bam
+        path bam
 
     output:
-      path "${bam.simpleName}.markdup.bam"
+        path "${bam.simpleName}.markdup.bam"
 
     script:
     """
     picard MarkDuplicates \
-       -I ${bam} \
-       -O ${bam.simpleName}.markdup.bam \
-       --METRICS_FILE ${bam.simpleName}.metrics \
-       --VALIDATION_STRINGENCY LENIENT \
-       --CREATE_INDEX TRUE
+        -I ${bam} \
+        -O ${bam.simpleName}.markdup.bam \
+        --METRICS_FILE ${bam.simpleName}.metrics \
+        --VALIDATION_STRINGENCY LENIENT \
+        --CREATE_INDEX TRUE
     """
 }
 
@@ -86,24 +91,24 @@ process add_read_groups {
     publishDir params.output
 
     input:
-      path bam
+        path bam
 
     output:
-      path "${bam.simpleName}.rg.bam"
+        path "${bam.simpleName}.rg.bam"
 
     script:
     """
     picard AddOrReplaceReadGroups \
-      -I ${bam} \
-      -O ${bam.simpleName}.rg.bam \
-      -ID ${bam.simpleName} \
-      -PL Illumina \
-      -SM rice \
-      -LB 3k \
-      -CN BGI \
-      -PU gsl \
-      --VALIDATION_STRINGENCY LENIENT \
-      --CREATE_INDEX TRUE
+        -I ${bam} \
+        -O ${bam.simpleName}.rg.bam \
+        -ID ${bam.simpleName} \
+        -PL Illumina \
+        -SM rice \
+        -LB 3k \
+        -CN BGI \
+        -PU gsl \
+        --VALIDATION_STRINGENCY LENIENT \
+        --CREATE_INDEX TRUE
     """
 }
 
@@ -111,15 +116,18 @@ process merge_bam {
     publishDir params.output
     
     input:
-      path params.output
-      path add_read_groups
+        path params.output
+        path add_read_groups
 
     output:
-      path "merged.bam"
+        path "merged.bam"
     
     script:
     """
-    samtools merge --write-index merged.bam $params.output/*.rg.bam
+    samtools merge \
+        --write-index \
+        merged.bam \
+        $params.output/*.rg.bam
     """
 }
 
@@ -128,13 +136,13 @@ process haplotype_caller {
     publishDir params.output
     
     input:
-      path genome
-      path genome_fai
-      path genome_dic
-      path merged_bam
+        path genome
+        path genome_fai
+        path genome_dic
+        path merged_bam
       
     output:
-      path "${merged_bam.baseName}.vcf.gz"
+        path "${merged_bam.baseName}.vcf.gz"
 
     script:
     """
