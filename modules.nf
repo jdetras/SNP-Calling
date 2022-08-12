@@ -1,26 +1,3 @@
-process prepare_reference {
-    tag "$genome.baseName"
-    publishDir params.reference
-
-    input:
-      path genome
-    
-    output:
-      tuple \
-        path("${genome}.fai"), \
-        path("${genome}.amb"), \
-        path("${genome}.ann"), \
-        path("${genome}.bwt"), \
-        path("${genome}.pac"), \
-        path("${genome}.sa")
-
-    script:
-    """
-    samtools faidx $genome
-    bwa index $genome
-    """	
-}
-
 process alignment {
     publishDir params.output
 
@@ -38,7 +15,7 @@ process alignment {
 
     script:
     """
-    bwa mem -M ${genome} $reads > ${sampleName}.sam
+    bwa mem -M ${genome} ${reads[0]} ${reads[1]} > ${sampleName}.sam
     """
 }
 
@@ -130,18 +107,41 @@ process add_read_groups {
     """
 }
 
-//process merge_bam {
-//    tag "$bam.simpleName"
-//    publishDir params.output
-//    
-//    input:
-//      path '*.rg.bam' from bams
-//
-//    output:
-//      path "${bam}.merged.bam"
-//
-//    script:
-//    """
-//    "echo *.rg.bam"
-//   """
-//}
+process merge_bam {
+    publishDir params.output
+    
+    input:
+      path params.output
+      path add_read_groups
+
+    output:
+      path "merged.bam"
+    
+    script:
+    """
+    samtools merge --write-index merged.bam $params.output/*.rg.bam
+    """
+}
+
+process haplotype_caller {
+    tag "$merged_bam.baseName"
+    publishDir params.output
+    
+    input:
+      path genome
+      path genome_fai
+      path genome_dic
+      path merged_bam
+      
+    output:
+      path "${merged_bam.baseName}.vcf.gz"
+
+    script:
+    """
+    java -jar \$GATK HaplotypeCaller \
+      -R ${genome} \
+      -I ${merged_bam} \
+      -O ${merged_bam.baseName}.vcf.gz \
+      -ERC GVCF
+    """
+}
