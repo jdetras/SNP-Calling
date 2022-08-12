@@ -20,8 +20,16 @@ The input files required to run the pipeline:
 ## Pipeline parameters
 
 ### Usage
+Usage: `nextflow run main.nf [options]`
 
-$ nextflow run main.nf --reads '/home/data/reads/*{1,2}.fq.gz' --genome '/home/data/reference/genome.fa' --output '/home/output'
+Options:
+
+* `--reads` 
+* `--genome`
+* `--output`
+
+Example: 
+`$ nextflow run main.nf --reads '/home/data/reads/*_{1,2}.fq.gz' --genome '/home/data/reference/genome.fa' --output '/home/output'`
 
 Note: `main.nf` requires `module.nf` on the same working directory
 
