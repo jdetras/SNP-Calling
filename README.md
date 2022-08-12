@@ -32,7 +32,7 @@ Note: `main.nf` requires `module.nf` on the same working directory
 * Default parameter: `$projectDir/data/reads/*_{1,2}.fq.gz`
 
 Example: 
-  $ nextflow run main.nf --reads '/home/data/reads/*_{1,2}.fq.gz'
+  `$ nextflow run main.nf --reads '/home/data/reads/*_{1,2}.fq.gz'`
   
 #### `--genome`
 
@@ -41,14 +41,15 @@ Example:
 * Default parameter: `$projectDir/data/reference/genome.fa`
 
 Example:
-
-  $ nextflow run main.nf --genome home/data/reference/genome.fa
+  `$ nextflow run main.nf --genome home/data/reference/genome.fa`
   
 Note: indexing of reference genome should be done before running the Nextflow pipeline
 
-  $ bwa index /home/data/reference/genome.fa
-  $ samtools faidx /home/data/reference/genome.fa
-  $ picard CreateSequenceDictionary -R genome.fa -O genome.dict
+  `$ bwa index /home/data/reference/genome.fa`
+ 
+  `$ samtools faidx /home/data/reference/genome.fa`
+  
+  `$ picard CreateSequenceDictionary -R genome.fa -O genome.dict`
   
 #### `--output`
 
