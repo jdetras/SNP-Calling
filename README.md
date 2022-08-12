@@ -44,6 +44,12 @@ Example:
 
   $ nextflow run main.nf --genome home/data/reference/genome.fa
   
+Note: indexing of reference genome should be done before running the Nextflow pipeline
+
+  $ bwa index /home/data/reference/genome.fa
+  $ samtools faidx /home/data/reference/genome.fa
+  $ picard CreateSequenceDictionary -R genome.fa -O genome.dict
+  
 #### `--output`
 
 * The path to the directory for the output files.
