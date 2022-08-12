@@ -19,6 +19,10 @@ The input files required to run the pipeline:
 
 ## Pipeline parameters
 
+### Usage
+
+$ nextflow run main.nf --reads '/home/data/reads/*{1,2}.fq.gz' --genome '/home/data/reference/genome.fa' --output '/home/output'
+
 #### `--reads`
 
 * The path to the FASTQ read files.
