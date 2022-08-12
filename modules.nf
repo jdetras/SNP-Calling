@@ -36,7 +36,7 @@ process sort_sam {
 
     script:
     """
-    picard SortSam \
+    java -jar \$GATK SortSam \
         -I ${sam} \
         -O ${sam.baseName}.sorted.bam \
         -SO coordinate \
@@ -57,7 +57,7 @@ process fix_mate {
 
     script:
     """
-    picard FixMateInformation \
+    java -jar \$GATK FixMateInformation \
         -I ${bam} \
         -O ${bam.simpleName}.fixmate.bam \
         --VALIDATION_STRINGENCY LENIENT \
@@ -77,7 +77,7 @@ process mark_duplicates {
 
     script:
     """
-    picard MarkDuplicates \
+    java -jar \$GATK MarkDuplicates \
         -I ${bam} \
         -O ${bam.simpleName}.markdup.bam \
         --METRICS_FILE ${bam.simpleName}.metrics \
@@ -98,7 +98,7 @@ process add_read_groups {
 
     script:
     """
-    picard AddOrReplaceReadGroups \
+    java -jar \$GATK AddOrReplaceReadGroups \
         -I ${bam} \
         -O ${bam.simpleName}.rg.bam \
         -ID ${bam.simpleName} \
