@@ -44,107 +44,50 @@ ENV PATH=$PATH:/gatk-4.2.6.1
 
 RUN apt-get install bwa
 
-RUN set -eux; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		bzip2 \
-		unzip \
-		xz-utils \
-		\
-# java.lang.UnsatisfiedLinkError: /usr/local/openjdk-11/lib/libfontmanager.so: libfreetype.so.6: cannot open shared object file: No such file or directory
-# java.lang.NoClassDefFoundError: Could not initialize class sun.awt.X11FontManager
-# https://github.com/docker-library/openjdk/pull/235#issuecomment-424466077
-		fontconfig libfreetype6 \
-		\
-# utilities for keeping Debian and OpenJDK CA certificates in sync
-		ca-certificates p11-kit \
-	; \
-	rm -rf /var/lib/apt/lists/*
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ENV JAVA_HOME /usr/local/openjdk-11
-RUN { echo '#/bin/sh'; echo 'echo "$JAVA_HOME"'; } > /usr/local/bin/docker-java-home && chmod +x /usr/local/bin/docker-java-home && [ "$JAVA_HOME" = "$(docker-java-home)" ] # backwards compatibility
-ENV PATH $JAVA_HOME/bin:$PATH
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata curl ca-certificates fontconfig locales \
+    && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Default to UTF-8 file.encoding
-ENV LANG C.UTF-8
-
-# https://adoptopenjdk.net/upstream.html
-# >
-# > What are these binaries?
-# >
-# > These binaries are built by Red Hat on their infrastructure on behalf of the OpenJDK jdk8u and jdk11u projects. The binaries are created from the unmodified source code at OpenJDK. Although no formal support agreement is provided, please report any bugs you may find to https://bugs.java.com/.
-# >
-ENV JAVA_VERSION 11.0.16
-# https://github.com/docker-library/openjdk/issues/320#issuecomment-494050246
-# >
-# > I am the OpenJDK 8 and 11 Updates OpenJDK project lead.
-# > ...
-# > While it is true that the OpenJDK Governing Board has not sanctioned those releases, they (or rather we, since I am a member) didn't sanction Oracle's OpenJDK releases either. As far as I am aware, the lead of an OpenJDK project is entitled to release binary builds, and there is clearly a need for them.
-# >
+ENV JAVA_VERSION jdk-11.0.11+9
 
 RUN set -eux; \
-	\
-	arch="$(dpkg --print-architecture)"; \
-	case "$arch" in \
-		'amd64') \
-			downloadUrl='https://github.com/AdoptOpenJDK/openjdk11-upstream-binaries/releases/download/jdk-11.0.16%2B8/OpenJDK11U-jdk_x64_linux_11.0.16_8.tar.gz'; \
-			;; \
-		'arm64') \
-			downloadUrl='https://github.com/AdoptOpenJDK/openjdk11-upstream-binaries/releases/download/jdk-11.0.16%2B8/OpenJDK11U-jdk_aarch64_linux_11.0.16_8.tar.gz'; \
-			;; \
-		*) echo >&2 "error: unsupported architecture: '$arch'"; exit 1 ;; \
-	esac; \
-	\
-	wget --progress=dot:giga -O openjdk.tgz "$downloadUrl"; \
-	wget --progress=dot:giga -O openjdk.tgz.asc "$downloadUrl.sign"; \
-	\
-	export GNUPGHOME="$(mktemp -d)"; \
-# pre-fetch Andrew Haley's (the OpenJDK 8 and 11 Updates OpenJDK project lead) key so we can verify that the OpenJDK key was signed by it
-# (https://github.com/docker-library/openjdk/pull/322#discussion_r286839190)
-# we pre-fetch this so that the signature it makes on the OpenJDK key can survive "import-clean" in gpg
-	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys EAC843EBD3EFDB98CC772FADA5CD6035332FA671; \
-# TODO find a good link for users to verify this key is right (https://mail.openjdk.java.net/pipermail/jdk-updates-dev/2019-April/000951.html is one of the only mentions of it I can find); perhaps a note added to https://adoptopenjdk.net/upstream.html would make sense?
-# no-self-sigs-only: https://salsa.debian.org/debian/gnupg2/commit/c93ca04a53569916308b369c8b218dad5ae8fe07
-	gpg --batch --keyserver keyserver.ubuntu.com --keyserver-options no-self-sigs-only --recv-keys CA5F11C6CE22644D42C6AC4492EF8D39DC13168F; \
-	gpg --batch --list-sigs --keyid-format 0xLONG CA5F11C6CE22644D42C6AC4492EF8D39DC13168F \
-		| tee /dev/stderr \
-		| grep '0xA5CD6035332FA671' \
-		| grep 'Andrew Haley'; \
-	gpg --batch --verify openjdk.tgz.asc openjdk.tgz; \
-	gpgconf --kill all; \
-	rm -rf "$GNUPGHOME"; \
-	\
-	mkdir -p "$JAVA_HOME"; \
-	tar --extract \
-		--file openjdk.tgz \
-		--directory "$JAVA_HOME" \
-		--strip-components 1 \
-		--no-same-owner \
-	; \
-	rm openjdk.tgz*; \
-	\
-# update "cacerts" bundle to use Debian's CA certificates (and make sure it stays up-to-date with changes to Debian's store)
-# see https://github.com/docker-library/openjdk/issues/327
-#     http://rabexc.org/posts/certificates-not-working-java#comment-4099504075
-#     https://salsa.debian.org/java-team/ca-certificates-java/blob/3e51a84e9104823319abeb31f880580e46f45a98/debian/jks-keystore.hook.in
-#     https://git.alpinelinux.org/aports/tree/community/java-cacerts/APKBUILD?id=761af65f38b4570093461e6546dcf6b179d2b624#n29
-	{ \
-		echo '#!/usr/bin/env bash'; \
-		echo 'set -Eeuo pipefail'; \
-		echo 'trust extract --overwrite --format=java-cacerts --filter=ca-anchors --purpose=server-auth "$JAVA_HOME/lib/security/cacerts"'; \
-	} > /etc/ca-certificates/update.d/docker-openjdk; \
-	chmod +x /etc/ca-certificates/update.d/docker-openjdk; \
-	/etc/ca-certificates/update.d/docker-openjdk; \
-	\
-# https://github.com/docker-library/openjdk/issues/331#issuecomment-498834472
-	find "$JAVA_HOME/lib" -name '*.so' -exec dirname '{}' ';' | sort -u > /etc/ld.so.conf.d/docker-openjdk.conf; \
-	ldconfig; \
-	\
-# https://github.com/docker-library/openjdk/issues/212#issuecomment-420979840
-# https://openjdk.java.net/jeps/341
-	java -Xshare:dump; \
-	\
-# basic smoke test
-	fileEncoding="$(echo 'System.out.println(System.getProperty("file.encoding"))' | jshell -s -)"; [ "$fileEncoding" = 'UTF-8' ]; rm -rf ~/.java; \
-	javac --version; \
-	java --version
+    ARCH="$(dpkg --print-architecture)"; \
+    case "${ARCH}" in \
+       aarch64|arm64) \
+         ESUM='4966b0df9406b7041e14316e04c9579806832fafa02c5d3bd1842163b7f2353a'; \
+         BINARY_URL='https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jdk_aarch64_linux_hotspot_11.0.11_9.tar.gz'; \
+         ;; \
+       armhf|armv7l) \
+         ESUM='2d7aba0b9ea287145ad437d4b3035fc84f7508e78c6fec99be4ff59fe1b6fc0d'; \
+         BINARY_URL='https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jdk_arm_linux_hotspot_11.0.11_9.tar.gz'; \
+         ;; \
+       ppc64el|ppc64le) \
+         ESUM='945b114bd0a617d742653ac1ae89d35384bf89389046a44681109cf8e4f4af91'; \
+         BINARY_URL='https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jdk_ppc64le_linux_hotspot_11.0.11_9.tar.gz'; \
+         ;; \
+       s390x) \
+         ESUM='5d81979d27d9d8b3ed5bca1a91fc899cbbfb3d907f445ee7329628105e92f52c'; \
+         BINARY_URL='https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jdk_s390x_linux_hotspot_11.0.11_9.tar.gz'; \
+         ;; \
+       amd64|x86_64) \
+         ESUM='e99b98f851541202ab64401594901e583b764e368814320eba442095251e78cb'; \
+         BINARY_URL='https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.11%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.11_9.tar.gz'; \
+         ;; \
+       *) \
+         echo "Unsupported arch: ${ARCH}"; \
+         exit 1; \
+         ;; \
+    esac; \
+    curl -LfsSo /tmp/openjdk.tar.gz ${BINARY_URL}; \
+    echo "${ESUM} */tmp/openjdk.tar.gz" | sha256sum -c -; \
+    mkdir -p /opt/java/openjdk; \
+    cd /opt/java/openjdk; \
+    tar -xf /tmp/openjdk.tar.gz --strip-components=1; \
+    rm -rf /tmp/openjdk.tar.gz;
+
+ENV JAVA_HOME=/opt/java/openjdk \
+    PATH="/opt/java/openjdk/bin:$PATH"
