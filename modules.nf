@@ -113,7 +113,7 @@ process add_read_groups {
 }
 
 process merge_bam {
-    publishDir params.output
+    publishDir params.output, mode: 'copy'
     
     input:
         path params.output
@@ -133,7 +133,7 @@ process merge_bam {
 
 process haplotype_caller {
     tag "$merged_bam.baseName"
-    publishDir params.output
+    publishDir params.output, mode: 'copy'
     
     input:
         path genome
