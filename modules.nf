@@ -145,7 +145,7 @@ process haplotype_caller {
 
     script:
     """
-    samtools index {$merged_bam}
+    samtools index ${merged_bam}
 
     gatk HaplotypeCaller \
       -R ${genome} \
