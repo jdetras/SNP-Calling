@@ -36,7 +36,7 @@ process sort_sam {
 
     script:
     """
-    java -jar \$GATK SortSam \
+    gatk SortSam \
         -I ${sam} \
         -O ${sam.baseName}.sorted.bam \
         -SO coordinate \
@@ -57,7 +57,7 @@ process fix_mate {
 
     script:
     """
-    java -jar \$GATK FixMateInformation \
+    gatk FixMateInformation \
         -I ${bam} \
         -O ${bam.simpleName}.fixmate.bam \
         --VALIDATION_STRINGENCY LENIENT \
@@ -77,7 +77,7 @@ process mark_duplicates {
 
     script:
     """
-    java -jar \$GATK MarkDuplicates \
+    gatk MarkDuplicates \
         -I ${bam} \
         -O ${bam.simpleName}.markdup.bam \
         --METRICS_FILE ${bam.simpleName}.metrics \
@@ -98,7 +98,7 @@ process add_read_groups {
 
     script:
     """
-    java -jar \$GATK AddOrReplaceReadGroups \
+    gatk AddOrReplaceReadGroups \
         -I ${bam} \
         -O ${bam.simpleName}.rg.bam \
         -ID ${bam.simpleName} \
@@ -146,7 +146,7 @@ process haplotype_caller {
 
     script:
     """
-    java -jar \$GATK HaplotypeCaller \
+    gatk HaplotypeCaller \
       -R ${genome} \
       -I ${merged_bam} \
       -O ${merged_bam.baseName}.vcf.gz \
