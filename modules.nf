@@ -125,7 +125,6 @@ process merge_bam {
     script:
     """
     samtools merge \
-        --write-index \
         merged.bam \
         $params.output/*.rg.bam
     """
@@ -146,6 +145,8 @@ process haplotype_caller {
 
     script:
     """
+    samtools index {$merged_bam}
+
     gatk HaplotypeCaller \
       -R ${genome} \
       -I ${merged_bam} \
