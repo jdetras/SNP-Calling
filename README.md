@@ -21,6 +21,10 @@ Launch the pipeline execution with the following command:
 
   `nextflow run jdetras/snp-calling -profile docker`
   
+Note: Currently works on linux/arm64. Build for linux/amd64 currently in development. For linux/amd64 architecture, use the following instead:
+
+  `nextflow run main.nf [options]`
+  
 ## Pipeline Description
 
 The variant calling pipeline follows the recommended practices from GATK. The input genomic data are aligned to a reference genome using BWA. The alignemnt files are processed using Picard Tools. Variant calling is done using samtools and GATK. 
