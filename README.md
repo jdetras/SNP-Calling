@@ -38,7 +38,8 @@ The input files required to run the pipeline:
 ## Pipeline parameters
 
 ### Usage
-Usage: `nextflow run jdetras/snp-calling -profile docker [options]`
+Usage: For linux/arm64: `nextflow run jdetras/snp-calling -profile docker [options]`
+       For linux/amd64: `nextflow run main.nf [options]`
 
 Options:
 
