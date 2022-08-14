@@ -1,11 +1,25 @@
 # SNP-Calling
 GATK Variant calling pipeline for genomic data using Nextflow
 
-[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A522.04.5.5708-brightgreen.svg)](http://nextflow.io)
+[![nextflow](https://img.shields.io/badge/nextflow-%E2%89%A522.04.5-brightgreen.svg)](http://nextflow.io)
 
-## Install Nextflow using the following command: 
+## Quickstart
+
+Install Nextflow using the following command: 
 
   `curl -s https://get.nextflow.io | bash`
+  
+Index reference genome
+
+  `$ bwa index /path/to/reference/genome.fa`
+ 
+  `$ samtools faidx /path/to/reference/genome.fa`
+  
+  `$ gatk CreateSequenceDictionary -R /path/to/genome.fa -O genome.dict`
+
+Launch the pipeline execution with the following command:
+
+  `nextflow run jdetras/snp-calling -profile docker`
   
 ## Pipeline Description
 
@@ -20,7 +34,7 @@ The input files required to run the pipeline:
 ## Pipeline parameters
 
 ### Usage
-Usage: `nextflow run main.nf [options]`
+Usage: `nextflow run jdetras/snp-calling -profile docker [options]`
 
 Options:
 
@@ -29,9 +43,7 @@ Options:
 * `--output`
 
 Example: 
-`$ nextflow run main.nf --reads '/home/data/reads/*_{1,2}.fq.gz' --genome '/home/data/reference/genome.fa' --output '/home/output'`
-
-Note: `main.nf` requires `module.nf` on the same working directory
+`$ nextflow run jdetras/snp-calling -profile docker --reads '/path/to/reads/*_{1,2}.fq.gz' --genome '/path/to/reference/genome.fa' --output '/path/to/output'`
 
 #### `--reads`
 
@@ -40,7 +52,7 @@ Note: `main.nf` requires `module.nf` on the same working directory
 * Default parameter: `$projectDir/data/reads/*_{1,2}.fq.gz`
 
 Example: 
-  `$ nextflow run main.nf --reads '/home/data/reads/*_{1,2}.fq.gz'`
+  `$ nextflow run jdetras/snp-calling -profile docker --reads '/path/to/reads/*_{1,2}.fq.gz'`
   
 #### `--genome`
 
@@ -49,15 +61,9 @@ Example:
 * Default parameter: `$projectDir/data/reference/genome.fa`
 
 Example:
-  `$ nextflow run main.nf --genome home/data/reference/genome.fa`
+  `$ nextflow run jdetras/snp-calling -profile docker --genome /path/to/reference/genome.fa`
   
-Note: indexing of reference genome should be done before running the Nextflow pipeline
 
-  `$ bwa index /home/data/reference/genome.fa`
- 
-  `$ samtools faidx /home/data/reference/genome.fa`
-  
-  `$ picard CreateSequenceDictionary -R genome.fa -O genome.dict`
   
 #### `--output`
 
@@ -66,7 +72,7 @@ Note: indexing of reference genome should be done before running the Nextflow pi
 
 ## Software
 
-* [BWA](http://bio-bwa.sourceforge.net/)
-* [Samtools](http://www.htslib.org/)
-* [GATK](https://gatk.broadinstitute.org/) - Add 'GATK' as an environment variable in `~/.bashrc`
+* [BWA 0.7.17](http://bio-bwa.sourceforge.net/)
+* [Samtools 1.3.1](http://www.htslib.org/)
+* [GATK 4.2.6.1](https://gatk.broadinstitute.org/) 
 
