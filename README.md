@@ -21,10 +21,6 @@ Launch the pipeline execution with the following command:
 
     nextflow run jdetras/snp-calling -profile docker
   
-Note: Currently works on linux/arm64. Build for linux/amd64 currently in development. For linux/amd64 architecture, use the following instead:
-
-  `nextflow run main.nf [options]`
-  
 ## Pipeline Description
 
 The variant calling pipeline follows the recommended practices from GATK. The input genomic data are aligned to a reference genome using BWA. The alignemnt files are processed using Picard Tools. Variant calling is done using samtools and GATK. 
@@ -38,8 +34,7 @@ The input files required to run the pipeline:
 ## Pipeline parameters
 
 ### Usage
-Usage: For linux/arm64: `nextflow run jdetras/snp-calling -profile docker [options]`
-       For linux/amd64: `nextflow run main.nf [options]`
+Usage: `nextflow run jdetras/snp-calling -profile docker [options]`
 
 Options:
 
@@ -48,7 +43,7 @@ Options:
 * `--output`
 
 Example: 
-`$ nextflow run jdetras/snp-calling -profile docker --reads '/path/to/reads/*_{1,2}.fq.gz' --genome '/path/to/reference/genome.fa' --output '/path/to/output'`
+  `$ nextflow run jdetras/snp-calling -profile docker --reads '/path/to/reads/*_{1,2}.fq.gz' --genome '/path/to/reference/genome.fa' --output '/path/to/output'`
 
 #### `--reads`
 
@@ -67,9 +62,7 @@ Example:
 
 Example:
   `$ nextflow run jdetras/snp-calling -profile docker --genome /path/to/reference/genome.fa`
-  
-
-  
+    
 #### `--output`
 
 * The path to the directory for the output files.
@@ -80,4 +73,3 @@ Example:
 * [BWA 0.7.17](http://bio-bwa.sourceforge.net/)
 * [Samtools 1.3.1](http://www.htslib.org/)
 * [GATK 4.2.6.1](https://gatk.broadinstitute.org/) 
-
