@@ -7,9 +7,9 @@ GATK Variant calling pipeline for genomic data using Nextflow
 
 Install Nextflow using the following command: 
 
-  `curl -s https://get.nextflow.io | bash`
+    curl -s https://get.nextflow.io | bash
   
-Index reference genome
+Index reference genome:
 
   `$ bwa index /path/to/reference/genome.fa`
  
@@ -19,7 +19,7 @@ Index reference genome
 
 Launch the pipeline execution with the following command:
 
-  `nextflow run jdetras/snp-calling -profile docker`
+    nextflow run jdetras/snp-calling -profile docker
   
 ## Pipeline Description
 
