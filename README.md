@@ -19,7 +19,7 @@ Index reference genome:
 
 Launch the pipeline execution with the following command:
 
-    nextflow run jdetras/snp-calling -profile docker
+    nextflow run jdetras/snp-calling -r main -profile docker
   
 ## Pipeline Description
 
